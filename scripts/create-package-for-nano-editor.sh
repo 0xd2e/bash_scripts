@@ -19,7 +19,7 @@ set -e; # Exit when any command fails
 
 readonly URL='https://www.nano-editor.org/dist/v4/nano-4.3.tar.gz';
 FILE_NAME=${URL##*/}; # nano-x.y.z.tar.gz
-readonly DIR_NAME=${FILE_NAME//'.tar.gz'/''}; # nano-x.y.z
+readonly DIR_NAME=${FILE_NAME%.tar.*}; # nano-x.y.z
 readonly VERSION=${DIR_NAME##*-}; # x.y.z
 
 STATUS=0;
