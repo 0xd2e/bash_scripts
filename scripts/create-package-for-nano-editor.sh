@@ -30,7 +30,7 @@ then
     ((++STATUS));
 fi
 
-for cmd in auto-apt checkinstall gcc git
+for cmd in auto-apt checkinstall gcc
 do
     if [ -z "$(which $cmd)" ]
     then
@@ -101,7 +101,12 @@ readonly CONFIGURE_ARG_LIST=(
     --disable-nls           # Disable internationalization, do not use Native Language Support
 );
 
-USER="$(git config user.email)";
+USER='';
+
+if [ -n "$(which git)" ]
+then
+    USER="$(git config user.email)";
+fi
 
 if [ -z $USER ]
 then
