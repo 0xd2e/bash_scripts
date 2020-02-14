@@ -10,7 +10,7 @@ set -e; # Exit when any command fails
 
 
 readonly MOUNT_POINT='/mnt/ramdisk';
-readonly MOUNT_OPTIONS='async,noauto,nodev,nodiratime,noexec,nofail,nosuid,rw,nouser,size=512M,huge=never';
+readonly MOUNT_OPTIONS='async,noatime,noauto,nodev,nodiratime,noexec,nofail,nosuid,rw,nouser,size=512M,huge=never';
 declare -r -i STATUS=$(df | grep $MOUNT_POINT | wc --bytes);
 
 if [ $STATUS -eq 0 ]
