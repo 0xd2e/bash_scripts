@@ -17,7 +17,7 @@ set -e; # Exit when any command fails
 # Official GNU nano documentation: https://www.nano-editor.org/docs.php
 
 
-readonly URL='https://www.nano-editor.org/dist/v4/nano-4.3.tar.gz';
+readonly URL='https://www.nano-editor.org/dist/v4/nano-4.8.tar.gz';
 FILE_NAME=${URL##*/}; # nano-x.y.z.tar.gz
 readonly DIR_NAME=${FILE_NAME%.tar.*}; # nano-x.y.z
 readonly VERSION=${DIR_NAME##*-}; # x.y.z
@@ -79,19 +79,22 @@ cd $DIR_NAME;
 # Type "./configure --help" for more information
 readonly CONFIGURE_ARG_LIST=(
     --quiet
-    --prefix='/usr/local'   # Installation location, default is /usr/local/
+    --disable-dependency-tracking # Speed up one-time build by rejecting slow dependency extractors
+    --prefix='/usr/local'   # Installation location for architecture-independent files, default is /usr/local/
 #   --disable-largefile     # Omit support for large files
+#   --disable-threads       # Build without multithread safety
+#   --disable-rpath         # Do not hardcode runtime library paths
     --disable-browser       # Disable the built-in file browser
 #   --disable-color         # Disable color and syntax highlighting
 #   --disable-comment       # Disable the comment/uncomment function
-    --disable-extra         # Disable the easter egg
+    --disable-extra         # Disable the Easter egg
     --disable-help          # Disable the built-in help texts
-    --disable-histories     # Disable the saving of search strings and cursor positions
+    --disable-histories     # Disable search and position histories
 #   --disable-justify       # Disable the justify/unjustify functions
-#   --disable-libmagic      # Disable the use of libmagic for determining a file's syntax
+#   --disable-libmagic      # Disable detection of file types via libmagic
 #   --disable-linenumbers   # Disable line numbering
     --disable-mouse         # Disable mouse support
-    --disable-multibuffer   # Disable the opening of multiple file buffers
+    --disable-multibuffer   # Disable multiple file buffers
 #   --disable-nanorc        # Disable the use of .nanorc files
     --disable-operatingdir  # Disable the setting of an operating directory
     --disable-speller       # Disable the spell-checker functions
@@ -114,14 +117,16 @@ then
 fi
 
 # Descriptions are taken from the manual
+# Default config: /etc/checkinstallrc
 readonly CHECKINSTALL_ARG_LIST=(
-    --type='debian'         # Choose packaging system
+    --type='debian'         # Create a Debian package
     --install=no            # Toggle installation of the created package
     --default               # Accept default answers to all questions
     --pkgname='nano'        # Set the package name
     --pkgversion=$VERSION   # Set the package version
     --pakdir='../'          # Where to save the new package
     --maintainer=$USER      # Set the package maintainer
+    --pkglicense='GPLv3'    # Set the package license
 #   --nodoc                 # Do not include documentation files
     --showinstall=no        # Toggle interactive install command
     --autodoinst=no         # Toggle creation of a "doinst.sh" script
