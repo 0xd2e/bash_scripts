@@ -80,28 +80,28 @@ cd $DIR_NAME;
 readonly CONFIGURE_ARG_LIST=(
     --quiet
     --disable-dependency-tracking # Speed up one-time build by rejecting slow dependency extractors
-    --prefix='/usr/local'   # Installation location for architecture-independent files, default is /usr/local/
-#   --disable-largefile     # Omit support for large files
-#   --disable-threads       # Build without multithread safety
-#   --disable-rpath         # Do not hardcode runtime library paths
-    --disable-browser       # Disable the built-in file browser
-#   --disable-color         # Disable color and syntax highlighting
-#   --disable-comment       # Disable the comment/uncomment function
-    --disable-extra         # Disable the Easter egg
-    --disable-help          # Disable the built-in help texts
-    --disable-histories     # Disable search and position histories
-#   --disable-justify       # Disable the justify/unjustify functions
-#   --disable-libmagic      # Disable detection of file types via libmagic
-#   --disable-linenumbers   # Disable line numbering
-    --disable-mouse         # Disable mouse support
-    --disable-multibuffer   # Disable multiple file buffers
-#   --disable-nanorc        # Disable the use of .nanorc files
-    --disable-operatingdir  # Disable the setting of an operating directory
-    --disable-speller       # Disable the spell-checker functions
-    --disable-tabcomp       # Disable the tab-completion functions
-    --disable-wordcomp      # Disable the word-completion function
-    --disable-wrapping      # Disable all hard-wrapping of text
-    --disable-nls           # Disable internationalization, do not use Native Language Support
+    --prefix='/usr/local'  # Installation location for architecture-independent files, default is /usr/local/
+#   --disable-largefile    # Omit support for large files
+#   --disable-threads      # Build without multithread safety
+#   --disable-rpath        # Do not hardcode runtime library paths
+    --disable-browser      # Disable the built-in file browser
+#   --disable-color        # Disable color and syntax highlighting
+#   --disable-comment      # Disable the comment/uncomment function
+    --disable-extra        # Disable the Easter egg
+    --disable-help         # Disable the built-in help texts
+    --disable-histories    # Disable search and position histories
+#   --disable-justify      # Disable the justify/unjustify functions
+#   --disable-libmagic     # Disable detection of file types via libmagic
+#   --disable-linenumbers  # Disable line numbering
+    --disable-mouse        # Disable mouse support
+    --disable-multibuffer  # Disable multiple file buffers
+#   --disable-nanorc       # Disable the use of .nanorc files
+    --disable-operatingdir # Disable the setting of an operating directory
+    --disable-speller      # Disable the spell-checker functions
+    --disable-tabcomp      # Disable the tab-completion functions
+    --disable-wordcomp     # Disable the word-completion function
+    --disable-wrapping     # Disable all hard-wrapping of text
+    --disable-nls          # Disable internationalization, do not use Native Language Support
 );
 
 USER='';
@@ -119,24 +119,24 @@ fi
 # Descriptions are taken from the manual
 # Default config: /etc/checkinstallrc
 readonly CHECKINSTALL_ARG_LIST=(
-    --type='debian'         # Create a Debian package
-    --install=no            # Toggle installation of the created package
-    --default               # Accept default answers to all questions
-    --pkgname='nano'        # Set the package name
-    --pkgversion=$VERSION   # Set the package version
-    --pakdir='../'          # Where to save the new package
-    --maintainer=$USER      # Set the package maintainer
-    --pkglicense='GPLv3'    # Set the package license
-#   --nodoc                 # Do not include documentation files
-    --showinstall=no        # Toggle interactive install command
-    --autodoinst=no         # Toggle creation of a "doinst.sh" script
-    --strip=yes             # Toggle stripping any ELF binaries found inside the package
-    --stripso=yes           # Toggle stripping any ELF libraries (.so) found inside the package
-#   --inspect               # Inspect the package's file list
-#   --review-control        # Review the control file before creating a debian package (.deb)
-    --deldoc=yes            # Toggle deletion of doc-pak upon termination
-    --deldesc=yes           # Toggle deletion of description-pak upon termination
-    --delspec=yes           # Toggle deletion of spec file upon termination
+    --type='debian'       # Create a Debian package
+    --install=no          # Toggle installation of the created package
+    --default             # Accept default answers to all questions
+    --pkgname='nano'      # Set the package name
+    --pkgversion=$VERSION # Set the package version
+    --pakdir='../'        # Where to save the new package
+    --maintainer=$USER    # Set the package maintainer
+    --pkglicense='GPLv3'  # Set the package license
+#   --nodoc               # Do not include documentation files
+    --showinstall=no      # Toggle interactive install command
+    --autodoinst=no       # Toggle creation of a "doinst.sh" script
+    --strip=yes           # Toggle stripping any ELF binaries found inside the package
+    --stripso=yes         # Toggle stripping any ELF libraries (.so) found inside the package
+#   --inspect             # Inspect the package's file list
+#   --review-control      # Review the control file before creating a debian package (.deb)
+    --deldoc=yes          # Toggle deletion of doc-pak upon termination
+    --deldesc=yes         # Toggle deletion of description-pak upon termination
+    --delspec=yes         # Toggle deletion of spec file upon termination
 );
 
 # Configure and build the package
