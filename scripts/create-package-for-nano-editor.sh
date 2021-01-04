@@ -1,7 +1,9 @@
 #!/bin/bash
 
 set -u; # Exit when uninitialised variable is used
-set -e; # Exit when any command fails
+set -e; # Exit when any command fails - http://mywiki.wooledge.org/BashFAQ/105
+
+# Official GNU nano documentation: https://www.nano-editor.org/docs.php
 
 # Disclaimer:
 # Package created by this script does not meet all requirements of a sensible
@@ -14,52 +16,84 @@ set -e; # Exit when any command fails
 # Debug section helps with eventual debugging that may be needed. Modern dynamic
 # loaders typically ensure that debug code is not loaded during normal execution.
 
-# Official GNU nano documentation: https://www.nano-editor.org/docs.php
-
-
-readonly URL='https://www.nano-editor.org/dist/v4/nano-4.8.tar.gz';
+readonly URL='https://www.nano-editor.org/dist/v5/nano-5.4.tar.gz';
 FILE_NAME=${URL##*/}; # nano-x.y.z.tar.gz
 readonly DIR_NAME=${FILE_NAME%.tar.*}; # nano-x.y.z
 readonly VERSION=${DIR_NAME##*-}; # x.y.z
 
-STATUS=0;
 
-if [[ ! $FILE_NAME =~ ^nano[-_]([[:digit:]]+\.){2,3}tar\.[gx]z$ ]]
-then
-    echo 'File must be either .tar.gz or .tar.xz archive with nano source';
-    ((++STATUS));
-fi
+function check_continue_permission
+{
+    read -r -p 'Do you want to continue (y/n)? ' answer;
 
-for cmd in auto-apt checkinstall gcc
-do
-    if [ -z "$(which $cmd)" ]
+    # Trim whitespaces
+    answer=$(xargs <<< $answer);
+
+    # Convert character(s) to lowercase
+    answer=${answer,,};
+
+    # Proceed only when the input is y(es)
+    [[ ! $answer =~ ^y(es)?$ ]] && exit 0;
+
+    unset answer;
+}
+
+
+function check_prerequisites
+{
+    local -i status=0;
+
+    if [[ ! $FILE_NAME =~ ^nano[-_]([[:digit:]]+\.){2,3}tar\.[gx]z$ ]]
     then
-        echo "-- '$cmd' is required but not found";
-        ((++STATUS));
+        echo 'File with nano source must be either .tar.gz or .tar.xz archive';
+        ((++status));
     fi
-done
 
-# Proceed only when all requirements are met
-[ $STATUS -ne 0 ] && exit 0;
+    for cmd in checkinstall gcc
+    do
+        if [ -z "$(which $cmd)" ]
+        then
+            echo "-- Missing requirement: $cmd";
+            ((++status));
+        fi
+    done
+
+    # Proceed only when all requirements are met
+    [ $status -ne 0 ] && exit 0;
+
+    unset status cmd;
+}
+
+
+function clean_files
+{
+    [ -f ./Makefile ] && make --quiet clean;
+    [ "$(basename $PWD)" == "$DIR_NAME" ] && cd ..;
+    [ -f $FILE_NAME ] && rm --force --verbose $FILE_NAME;
+    [ -d $DIR_NAME ] && rm --force --recursive $DIR_NAME && echo "Removed $DIR_NAME directory";
+}
+
 
 echo "Running $(basename $0) with pid $$ in cwd $(pwd)/";
 echo "This script will create a package from source for GNU nano text editor version $VERSION";
-read -r -p 'Do you want to continue (y/n)? ' ANSWER;
+check_continue_permission;
+check_prerequisites;
 
-# Convert character(s) to lowercase
-ANSWER=${ANSWER,,};
-
-# Proceed only when the input is y[es]
-[[ ! $ANSWER =~ ^y(es)?$ ]] && exit 0;
-
-unset STATUS ANSWER cmd;
-
-# Download the source
-if [ -n "$(which wget)" ]
+# Download the source code
+if [ -f $FILE_NAME -a -s $FILE_NAME ]
 then
-    wget --no-verbose --tries=3 --output-document=$FILE_NAME --show-progress --timeout=6 $URL;
+    echo "File already downloaded: $FILE_NAME";
+    if [ ! -r $FILE_NAME ]
+    then
+        echo 'No read permission';
+        ls -lh | grep --color $FILE_NAME;
+        exit 0;
+    fi
+elif [ -n "$(which wget)" ]
+then
+    wget --no-verbose --tries=6 --output-document=$FILE_NAME --show-progress --timeout=16 $URL;
 else
-    curl --silent --show-error --retry 3 --output $FILE_NAME --connect-timeout 6 $URL;
+    curl --silent --show-error --retry 6 --output $FILE_NAME --connect-timeout 16 $URL;
 fi
 
 # Unpack the source, do not show the list of extracted files
@@ -70,18 +104,15 @@ else
     tar -Jxf $FILE_NAME || unxz --decompress $FILE_NAME | tar --extract --file -;
 fi
 
-cd $DIR_NAME;
-
-# Ensure that configure file has execute permission
-[ ! -x ./configure ] && chmod --changes u+x ./configure;
-
-# Descriptions are taken from the official documentation
-# Type "./configure --help" for more information
+# Descriptions are taken from the official documentation. For more information:
+# - visit https://www.nano-editor.org/dist/v5/nano.html#Building-and-Configure-Options
+# - type "./configure --help"
 readonly CONFIGURE_ARG_LIST=(
-    --quiet
+#   --no-create            # Only check dependencies
+    --quiet                # Show only errors and warnings
     --disable-dependency-tracking # Speed up one-time build by rejecting slow dependency extractors
     --prefix='/usr/local'  # Installation location for architecture-independent files, default is /usr/local/
-#   --disable-largefile    # Omit support for large files
+    --disable-largefile    # Omit support for large files
 #   --disable-threads      # Build without multithread safety
 #   --disable-rpath        # Do not hardcode runtime library paths
     --disable-browser      # Disable the built-in file browser
@@ -104,20 +135,16 @@ readonly CONFIGURE_ARG_LIST=(
     --disable-nls          # Disable internationalization, do not use Native Language Support
 );
 
-USER='';
-
 if [ -n "$(which git)" ]
 then
     USER="$(git config user.email)";
 fi
 
-if [ -z $USER ]
-then
-    USER="$(whoami)";
-fi
+# Assign the current user name if git is not installed or email address is not configured
+USER=${USER:-"$(whoami)"};
 
 # Descriptions are taken from the manual
-# Default config: /etc/checkinstallrc
+# Default config file: /etc/checkinstallrc
 readonly CHECKINSTALL_ARG_LIST=(
     --type='debian'       # Create a Debian package
     --install=no          # Toggle installation of the created package
@@ -139,16 +166,18 @@ readonly CHECKINSTALL_ARG_LIST=(
     --delspec=yes         # Toggle deletion of spec file upon termination
 );
 
+cd $DIR_NAME;
+
+# Ensure that configure file has execute permission
+[ ! -x ./configure ] && chmod --changes u+x ./configure;
+
 # Configure and build the package
-auto-apt run ./configure ${CONFIGURE_ARG_LIST[@]};
-make --quiet;
+sudo ./configure ${CONFIGURE_ARG_LIST[@]};
+[ ! -f ./Makefile ] && exit 0;
+make --quiet CFLAGS='-march=native -g0 -O3 -Wall';
 sudo checkinstall ${CHECKINSTALL_ARG_LIST[@]};
 
-make --quiet clean;
-cd ..;
-rm --force --verbose $FILE_NAME;
-rm --force --recursive $DIR_NAME;
-[ ! -d $DIR_NAME ] && echo "Removed directory '$DIR_NAME'";
+clean_files;
 
 USER="$(whoami)";
 FILE_NAME="nano[_-]$VERSION*.deb";
